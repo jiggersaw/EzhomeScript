@@ -58,16 +58,19 @@ public class RestCallUtil {
             if(urls.length != body.length) {
                 throw new IllegalArgumentException("Rest urls length should be same as body length.");
             }
-            for(int i=0; i<urls.length; i++) {
-                resps[i] = simpleRestCall(urls[i], body[i], tenant, httpMethod);
-            }
-        } else {
 
+        }
+        for(int i=0; i<urls.length; i++) {
+            resps[i] = simpleRestCall(urls[i], body[i], tenant, httpMethod);
         }
         return resps;
     }
 
     private static String streamToString(InputStream in) {
         return null;
+    }
+
+    public static void main(String[] args) {
+        String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/09877673-7aad-413e-92f4-36fc143d6176?t=ezhome&l=en_US";
     }
 }
