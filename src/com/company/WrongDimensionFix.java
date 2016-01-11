@@ -25,7 +25,7 @@ public class WrongDimensionFix {
     private static String JSON_FILE_URL;
 
 
-    private Map<String, String[]> modelDims = new HashMap();
+    private Map<String, Float[]> modelDims = new HashMap();
     private List<String> modelList = new ArrayList();
     private File failedLog;
     private File filesToUpdate;
@@ -70,7 +70,7 @@ public class WrongDimensionFix {
         return S3Utils.getJsonFiles(FROM_BUCKET_NAME);
     }
 
-    public void getAndUpdate(String jsonKey, Map<String, Float[]> contentDimMap) throws JsonDataMD5CheckException,
+    public void getAndUpdate(String jsonKey) throws JsonDataMD5CheckException,
             JsonParseUpdateException {
         String s3Key = jsonKey;
         String md5OnS3;
@@ -92,7 +92,7 @@ public class WrongDimensionFix {
         StringBuilder newJson = new StringBuilder();
         boolean updated = true;
         try {
-            updated = JsonWorker.updateContentDimension(jsonData, contentDimMap, newJson);
+            updated = JsonWorker.updateContentDimension(jsonData, modelDims, newJson);
         } catch (Exception e) {
             FileUtil.appendToFile(failedLog, "Failed to parse and update json file ---> " + jsonKey);
             throw new JsonParseUpdateException("Failed to parse and update json file ---> " + jsonKey);
@@ -117,7 +117,13 @@ public class WrongDimensionFix {
         }
         List<String> jsonKeys = f.getAllJsonsKeys();
         for(String key : jsonKeys) {
-            f.getAndUpdate();
+            try {
+                f.getAndUpdate(key);
+            } catch (JsonDataMD5CheckException e) {
+                e.printStackTrace();
+            } catch (JsonParseUpdateException e) {
+                e.printStackTrace();
+            }
         }
         //1.Call catalog service to initialize model dimension map
 
