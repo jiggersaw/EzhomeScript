@@ -149,6 +149,27 @@ public class JsonWorker {
         return false;
     }
 
+    public static Float[] getDimFromContent(String jsonData) {
+        ObjectMapper mapper = mapperPool.get(poolPos.getAndIncrement() % POOL_SIZE);
+        try {
+            Map m = mapper.readValue(jsonData, Map.class);
+            Map l = (Map) m.get("item");
+            Map dim = (Map) l.get("boundingBox");
+            if(dim != null) {
+                Float x = ((Double) dim.get("xLen")).floatValue();
+                Float y = ((Double)dim.get("yLen")).floatValue();
+                Float z = ((Double)dim.get("zLen")).floatValue();
+                return new Float[] {x, y, z};
+            } else {
+                System.err.println("Invalid content json...");
+                return null;
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static String tryReadCorrectJson(String bucket, String key, String md5OnS3, File failedLog) {
         boolean success = false;
         int cnt = 0;
