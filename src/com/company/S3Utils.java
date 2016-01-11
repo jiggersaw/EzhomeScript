@@ -268,10 +268,10 @@ public class S3Utils {
     }
 
     public static void main(String[] args) throws Exception {
-        delBucket("juran-prod-contents-george", false);
+//        delBucket("juran-prod-contents-george", false);
 //        uploadFile(my_bucket_name, "george_test_file_key", new File("c:\\s3_resp.txt"));
 //        copyFiles("juran-staging-contents", "juran-staging-contents", "juran-staging-contents");
-//        copyFiles("juran-prod-contents", "juran-prod-contents-george", "juran-prod-contents");
+        copyFiles("juran-prod-contents", "juran-prod-contents-george", "juran-prod-contents");
 //        String jsonUrlFile = "C:\\color_test_data\\files_to_update2.txt";
 //        updatePermission("juran-staging-contents", jsonUrlFile);
     }
