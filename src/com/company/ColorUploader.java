@@ -510,7 +510,6 @@ public class ColorUploader {
                 ",\"retailers\" : ['{'\"id\" : \"" + RETAIL_SELECTED_ID + "\"'}']" +
                 ",\"categories\" : [\"{3}\"],\"references\" : '{}',\"files\" : []'}'";
 
-        GET_PROD_REST = "";
 
 /*        String categoryId = null;
         String tenant = null;
