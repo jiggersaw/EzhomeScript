@@ -92,6 +92,10 @@ public class ColorUploader {
 
     private static String ADD_PROD_REST = "";
 
+    private static String UPDATE_PROD_REST = "";
+
+    private static String GET_PROD_REST = "";
+
     private static final String DEL_PROD_REST = "/v1.0/products/{0}";
 
 
@@ -497,6 +501,16 @@ public class ColorUploader {
                 ",\"retailers\" : ['{'\"id\" : \"" + RETAIL_SELECTED_ID + "\"'}']" +
                 ",\"categories\" : [\"{3}\"],\"references\" : '{}',\"files\" : []'}'";
 //        }
+
+        UPDATE_PROD_REST = "'{'\"defaultName\" : \"{0}\",\"description\" : \" \",\"defaultDescription\" : \" \",\"status\" : 1,\"newFlag\" : true,\"attributes\" : [" +
+                "'{'\"id\" : \"" + STYLE_NODE_ID + "\",\"valuesIds\" : [\"{2}\"]'}', " + //style
+                "'{'\"id\" : \"" + CONTENT_NODE_ID + "\",\"valuesIds\" : [\"" + PAINT_PAINT + "\"]'}'," + //content type
+                "'{'\"id\" : \"" + PROD_NODE_ID + "\",\"valuesIds\" : [],\"free\" : [\"{0}\",\"{1}\",\"{2}\"]'}']" + //product type
+                ",\"brands\" : [\"" + BRAND_SELECTED_ID + "\"]" +
+                ",\"retailers\" : ['{'\"id\" : \"" + RETAIL_SELECTED_ID + "\"'}']" +
+                ",\"categories\" : [\"{3}\"],\"references\" : '{}',\"files\" : []'}'";
+
+        GET_PROD_REST = "";
 
 /*        String categoryId = null;
         String tenant = null;

@@ -112,6 +112,7 @@ public class RestCallUtil {
 
     public static void main(String[] args) throws IOException {
         String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
+
         List<String> ids = FileUtil.readFileAsLines(new File("C:\\color_test_data\\wrong_floor.txt"));
         String[] urls = new String[ids.size()];
         for(int i=0; i<urls.length; i++) {
