@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -25,14 +27,15 @@ public class WrongDimensionFix {
     private static String JSON_FILE_URL;
 
 
-    private Map<String, Float[]> modelDims = new HashMap();
+    private Map<String, Float[]> modelDims = new Hashtable();
     private List<String> modelList = new ArrayList();
     private File failedLog;
     private File filesToUpdate;
 
-    private static WrongDimensionFix getInstance(String configPath) {
+    private static WrongDimensionFix getInstance(String configPath) throws IOException {
         if(fix == null) {
             fix = new WrongDimensionFix();
+            fix.loadConfig(configPath);
             fix.failedLog = new File(FAILED_JSON_FILES);
             fix.filesToUpdate = new File(FILES_TO_BE_UPDATE);
         }
@@ -49,7 +52,7 @@ public class WrongDimensionFix {
         if((MODEL_LIST_FILE = p.getProperty("MODEL_LIST_FILE")) == null) throw new InvalidPropertiesFormatException("Missing MODEL_LIST_FILE");
         if((FROM_BUCKET_NAME = p.getProperty("FROM_BUCKET_NAME")) == null) throw new InvalidPropertiesFormatException("Missing FROM_BUCKET_NAME");
         if((FAILED_JSON_FILES = p.getProperty("FAILED_JSON_FILES")) == null) {
-            throw new InvalidPropertiesFormatException("Missing key AWS_SECRET_KEY");
+            throw new InvalidPropertiesFormatException("Missing key FAILED_JSON_FILES");
         } else {
             FAILED_JSON_FILES = FAILED_JSON_FILES + "_" + FROM_BUCKET_NAME;
         }
@@ -64,6 +67,26 @@ public class WrongDimensionFix {
             JSON_FILE_URL = JSON_FILE_URL + "_" + FROM_BUCKET_NAME;
         }
         modelList = FileUtil.readFileAsLines(new File(MODEL_LIST_FILE));
+    }
+
+    public void initModelDimensionMap() throws IOException {
+        String tenant = "ezhome";
+        List<String> ids = FileUtil.readFileAsLines(new File("C:\\color_test_data\\wrong_floor.txt"));
+        String[] urls = new String[ids.size()];
+        for(int i=0; i<urls.length; i++) {
+            urls[i] = MessageFormat.format(GET_PROD_REST, new String[]{ids.get(i), tenant});
+        }
+        String[] resps = RestCallUtil.batchRestCall(urls, null, "ezhome", "GET");
+        for(int j = 0; j<resps.length; j++) {
+            Object[] resp = JsonWorker.getDimFromContent(resps[j]);
+            Float[] dim = new Float[3];
+            for(int k=1; k<resp.length; k++) {
+                BigDecimal bd = new BigDecimal((Float) resp[k] / 100);
+                bd = bd.setScale(3, BigDecimal.ROUND_HALF_UP);
+                dim[k-1] = bd.floatValue();
+            }
+            modelDims.put((String)resp[0], dim);
+        }
     }
 
     public List<String> getAllJsonsKeys() {
@@ -97,7 +120,8 @@ public class WrongDimensionFix {
             FileUtil.appendToFile(failedLog, "Failed to parse and update json file ---> " + jsonKey);
             throw new JsonParseUpdateException("Failed to parse and update json file ---> " + jsonKey);
         }
-        if(updated) {
+
+/*        if(updated) {
             try {
                 S3Utils.uploadFileAsUTF8(FROM_BUCKET_NAME, jsonKey, newJson.toString());
                 FileUtil.appendToFile(filesToUpdate, "Successfully upated json url ---> " + jsonKey);
@@ -105,16 +129,17 @@ public class WrongDimensionFix {
                 e.printStackTrace();
                 FileUtil.appendToFile(failedLog, "Failed to upload file to S3, key -- > " + jsonKey);
             }
-        }
+        }*/
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         WrongDimensionFix f = null;
         if(args.length == 1) {
             f = WrongDimensionFix.getInstance(args[0]);
         } else {
             throw new IllegalArgumentException("Must specify the color migration configration file path!");
         }
+        f.initModelDimensionMap();
         List<String> jsonKeys = f.getAllJsonsKeys();
         for(String key : jsonKeys) {
             try {
@@ -125,7 +150,6 @@ public class WrongDimensionFix {
                 e.printStackTrace();
             }
         }
-        //1.Call catalog service to initialize model dimension map
-
+        System.out.println("Dimension fix done");
     }
 }
