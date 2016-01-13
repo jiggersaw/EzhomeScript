@@ -15,7 +15,7 @@ public class FileUtil {
 
     private static Map<String, BufferedWriter> bufWriterCache = new HashMap();
 
-    public static void appendToFile(File f, String s) {
+    public static synchronized void appendToFile(File f, String s) {
         try {
             bf = bufWriterCache.get(f.getCanonicalPath());
             if(bf == null) {

@@ -1,7 +1,9 @@
 package com.company;
 
 import com.amazonaws.util.Md5Utils;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
@@ -112,7 +114,7 @@ public class JsonWorker {
         return xyz;
     }
 
-    public static boolean updateContentDimension(String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) {
+    public static boolean updateContentDimension(String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = mapperPool.get(poolPos.getAndIncrement() % POOL_SIZE);
         String rs;
         try {
@@ -120,9 +122,13 @@ public class JsonWorker {
             List<Map> l = (List) m.get("data");
             final AtomicBoolean updated = new AtomicBoolean(false);
             final AtomicInteger updateCnt = new AtomicInteger(0);
+            if(l == null) {
+                System.out.println("Got null...");
+            }
             l.forEach(m1 -> {
                 if("hsw.model.Content".equals(m1.get("Class")) && m1.get("seekId") != null &&
-                        ((String)m1.get("seekId")).trim().length() > 0) {
+                        ((String)m1.get("seekId")).trim().length() > 0 &&
+                        contentDimMap.containsKey(((String)m1.get("seekId")).trim())) {
                     String unit = (String)m1.get("unit");
                     Float x = contentDimMap.get(m1.get("seekId"))[0];
                     Float y = contentDimMap.get(m1.get("seekId"))[1];
@@ -143,23 +149,30 @@ public class JsonWorker {
                 System.out.println("----------Found " + updateCnt + " content dimension fixed in 1 design----------");
                 return updated.get();
             }
-        } catch(Exception e) {
+        } catch(JsonParseException e1) {
+            throw e1;
+        } catch(JsonMappingException e2) {
+            throw e2;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public static Float[] getDimFromContent(String jsonData) {
+    public static Object[] getDimFromContent(String jsonData) {
         ObjectMapper mapper = mapperPool.get(poolPos.getAndIncrement() % POOL_SIZE);
         try {
             Map m = mapper.readValue(jsonData, Map.class);
             Map l = (Map) m.get("item");
+            String id = (String) l.get("id");
             Map dim = (Map) l.get("boundingBox");
             if(dim != null) {
                 Float x = ((Double) dim.get("xLen")).floatValue();
                 Float y = ((Double)dim.get("yLen")).floatValue();
                 Float z = ((Double)dim.get("zLen")).floatValue();
-                return new Float[] {x, y, z};
+                return new Object[] {id, x, y, z};
             } else {
                 System.err.println("Invalid content json...");
                 return null;

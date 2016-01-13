@@ -33,9 +33,10 @@ public class RestCallUtil {
     private static String RETAIL_SELECTED_ID = "de9d4c65-f747-4963-acfa-cea44c475fcc";
     private static String CATALOG_HOST = "http://catalog-be.alpha.homestyler.com/";
     private static String CATALOG_ID = "bf6eaf76-6dd9-43c7-bba9-fc03f2ab5fdb";
-    private static String WARM_STYLE_VAL = "";
-    private static String COLD_STYLE_VAL = "";
-    private static String BRANCH = "GB";
+    private static String WARM_STYLE_VAL = "f7c985ee-ca1b-499f-aace-e1b8923cb177";
+    private static String COLD_STYLE_VAL = "2079c05a-1b04-4314-9cbb-320da25acce0";
+    private static String BRANCH_GB = "GB";
+    private static String BRANCH_FR = "FR";
 
     public static String simpleRestCall(String url, String body, String tenant, String httpMethod) throws IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -64,8 +65,8 @@ public class RestCallUtil {
             String secret = BackendHeaderUtil.genHsSecurity(tenant);
             System.out.println("ts ---> " + ts);
             System.out.println("secret ---> " + secret);
-            httpGet.setHeader("hs_ts",ts);
-            httpGet.setHeader("hs_secret",secret);
+//            httpGet.setHeader("hs_ts",ts);
+//            httpGet.setHeader("hs_secret",secret);
             response = httpclient.execute(httpGet);
         } else if("PUT".equalsIgnoreCase(httpMethod)) {
             HttpPost httpPost = new HttpPost(url);
@@ -82,7 +83,8 @@ public class RestCallUtil {
             httpPost.setEntity(en);
             response = httpclient.execute(httpPost);
         }
-        String result = streamToString(response.getEntity().getContent(), EntityUtils.getContentCharSet(response.getEntity()));
+        String charset =  EntityUtils.getContentCharSet(response.getEntity());
+        String result = streamToString(response.getEntity().getContent(), charset == null ? "UTF-8" : charset);
         return result;
     }
 
@@ -90,7 +92,7 @@ public class RestCallUtil {
         File log = new File(logFile);
 
         String[] resps = new String[urls.length];
-        if("POST".equalsIgnoreCase(httpMethod)) {
+        if("POST".equalsIgnoreCase(httpMethod) || "PUT".equalsIgnoreCase(httpMethod)) {
             if(urls.length != body.length) {
                 throw new IllegalArgumentException("Rest urls length should be same as body length.");
             }
@@ -99,23 +101,28 @@ public class RestCallUtil {
         Arrays.asList(urls).stream().parallel().forEach(u -> {
             try {
                 int x = k.incrementAndGet();
-                System.out.println("Finish " + x + " call ----> " + urls[x-1]);
-                FileUtil.appendToFile(log, "Finish " + x + " call ----> " + urls[x-1]);
-                resps[x-1] = simpleRestCall(u, null, tenant, httpMethod);
-                FileUtil.appendToFile(log, "Response ---> " + resps[x-1] + " for " + urls[x-1]);
+
+                System.out.println("Finish " + x + " call ----> " + u);
+
+                FileUtil.appendToFile(log, "Finish " + x + " call ----> " + u);
+
+                resps[x - 1] = simpleRestCall(u, null, tenant, httpMethod);
+
+                FileUtil.appendToFile(log, "Response ---> " + resps[x-1] + " for " + u);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+
+/*        for(int i=0; i<urls.length; i++) {
+            if(body == null) {
+                resps[i] = simpleRestCall(urls[i], null, tenant, httpMethod);
+            } else {
+                resps[i] = simpleRestCall(urls[i], body[i], tenant, httpMethod);
+            }
+            System.out.println("Finish 1 call ----> " + urls[i]);
+        }*/
         FileUtil.finishAppend(log);
-//        for(int i=0; i<urls.length; i++) {
-//            if(body == null) {
-//                resps[i] = simpleRestCall(urls[i], null, tenant, httpMethod);
-//            } else {
-//                resps[i] = simpleRestCall(urls[i], body[i], tenant, httpMethod);
-//            }
-//            System.out.println("Finish 1 call ----> " + urls[i]);
-//        }
         return resps;
     }
 
@@ -145,7 +152,8 @@ public class RestCallUtil {
     }
 
     public static void main(String[] args) throws IOException {
-        String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
+//        String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
+        String jsonTemplate = "http://3d-alpha.juranzhijia.com.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
 
         List<String> ids = FileUtil.readFileAsLines(new File("C:\\color_test_data\\wrong_floor.txt"));
         String[] urls = new String[ids.size()];
@@ -153,12 +161,14 @@ public class RestCallUtil {
             urls[i] = MessageFormat.format(jsonTemplate, new String[]{ids.get(i), "ezhome"});
         }
         String[] resps = batchRestCall(urls, null, "ezhome", "GET");
-        for(String r : resps) {
-            Arrays.asList(JsonWorker.getDimFromContent(r)).forEach(d -> System.out.print(d + ", "));
+        for(int j = 0; j<resps.length; j++) {
+//            System.out.print(urls[j] + " ---> ");
+            Arrays.asList(JsonWorker.getDimFromContent(resps[j])).forEach(d -> System.out.print(d + ", "));
             System.out.println();
         }
 
-        String updateProdUrl = CATALOG_HOST + "/v1.0/products/{0}?lang=en_US&t={1}&tm=false&branch={2}";
+/*        String updateProdUrl = CATALOG_HOST + "/v1.0/products/{0}?lang=en_US&t={1}&tm=false&branch={2}";
+
         String updateProd = "'{'\"defaultName\" : \"{0}\",\"description\" : \" \",\"defaultDescription\" : \" \",\"status\" : 1,\"newFlag\" : true,\"attributes\" : [" +
                 "'{'\"id\" : \"" + STYLE_NODE_ID + "\",\"valuesIds\" : [\"{2}\"]'}', " + //style
                 "'{'\"id\" : \"" + CONTENT_NODE_ID + "\",\"valuesIds\" : [\"" + PAINT_PAINT + "\"]'}'," + //content type
@@ -166,15 +176,20 @@ public class RestCallUtil {
                 ",\"brands\" : [\"" + BRAND_SELECTED_ID + "\"]" +
                 ",\"retailers\" : ['{'\"id\" : \"" + RETAIL_SELECTED_ID + "\"'}']" +
                 ",\"categories\" : [\"{3}\"],\"references\" : '{}',\"files\" : []'}'";
-        List<String> params = FileUtil.readFileAsLines(new File("C:\\color_test_data\\idealstandard_to_fix.txt"));
+
+        String tenant = "idealstandard";
+        List<String> params = FileUtil.readFileAsLines(new File("C:\\color_test_data\\idealstandard_alpha_to_fix.txt"));
         String[] urls2 = new String[params.size()];
         String[] jsonBody = new String[params.size()];
         String[] newParams = new String[4];
         for(int j=0;j<urls2.length;j++) {
             String l = params.get(j);
             String[] arr = l.split(",");
-            newParams[0] = arr[1].trim();//rgb
-            newParams[1] = arr[2].trim();
+            String colorId = arr[0].trim();
+            String rgb = arr[1].trim();
+            String grp = arr[2].trim();
+            newParams[0] = rgb;//rgb
+            newParams[1] = grp;
             String style;
             if (newParams[1].equals("orange") ||
                     newParams[1].equals("gold") ||
@@ -188,9 +203,10 @@ public class RestCallUtil {
             }
             newParams[2] = style;//style
             newParams[3] = CATALOG_ID;
-            urls2[j] = MessageFormat.format(updateProd, newParams);
-            jsonBody[j] = MessageFormat.format(updateProdUrl, new String[]{arr[0], BRANCH});
+            urls2[j] = MessageFormat.format(updateProdUrl, new String[]{colorId, tenant, BRANCH_FR});
+            jsonBody[j] = MessageFormat.format(updateProd, newParams);
         }
+        batchRestCall(urls2, jsonBody, tenant, "PUT");*/
         System.out.println("Batch call done!");
     }
 }
