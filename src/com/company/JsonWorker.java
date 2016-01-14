@@ -114,7 +114,7 @@ public class JsonWorker {
         return xyz;
     }
 
-    public static boolean updateContentDimension(String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) throws JsonParseException, JsonMappingException {
+    public static int updateContentDimension(String jsonKey, String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = mapperPool.get(poolPos.getAndIncrement() % POOL_SIZE);
         String rs;
         try {
@@ -130,12 +130,13 @@ public class JsonWorker {
                         ((String)m1.get("seekId")).trim().length() > 0 &&
                         contentDimMap.containsKey(((String)m1.get("seekId")).trim())) {
                     String unit = (String)m1.get("unit");
+                    String seekid = (String) m1.get("seekId");
                     Float x = contentDimMap.get(m1.get("seekId"))[0];
                     Float y = contentDimMap.get(m1.get("seekId"))[1];
                     Float z = contentDimMap.get(m1.get("seekId"))[2];
-                    System.out.println("XLength before fix: " + m1.get("XLength") + "|XLength after fix: " + x);
-                    System.out.println("YLength before fix: " + m1.get("YLength") + "|YLength after fix: " + y);
-                    System.out.println("ZLength before fix: " + m1.get("ZLength") + "|ZLength after fix: " + z);
+                    System.out.println("XLength before fix: " + m1.get("XLength") + " | XLength after fix: " + x + " for seekid: " + seekid);
+                    System.out.println("YLength before fix: " + m1.get("YLength") + " | YLength after fix: " + y + " for seekid: " + seekid);
+                    System.out.println("ZLength before fix: " + m1.get("ZLength") + " | ZLength after fix: " + z + " for seekid: " + seekid);
                     m1.put("XLength", String.valueOf(x));
                     m1.put("YLength", String.valueOf(y));
                     m1.put("ZLength", String.valueOf(z));
@@ -146,8 +147,8 @@ public class JsonWorker {
             if(updated.get()) {
                 rs = mapper.writeValueAsString(m);
                 holder.append(rs);
-                System.out.println("----------Found " + updateCnt + " content dimension fixed in 1 design----------");
-                return updated.get();
+                System.out.println("----------Found " + updateCnt + " content dimension fixed in 1 design, key: " + jsonKey + " ----------");
+                return updateCnt.intValue();
             }
         } catch(JsonParseException e1) {
             throw e1;
@@ -158,7 +159,7 @@ public class JsonWorker {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return 0;
     }
 
     public static Object[] getDimFromContent(String jsonData) {

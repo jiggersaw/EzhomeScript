@@ -125,9 +125,12 @@ public class WrongDimensionFix {
             throw new JsonDataMD5CheckException("MD5 not match after retrieving from ---->" + jsonKey);
         }
         StringBuilder newJson = new StringBuilder();
-        boolean updated = true;
+        System.out.println("Starting try and update dimension for key: " + jsonKey);
         try {
-            updated = JsonWorker.updateContentDimension(jsonData, modelDims, newJson);
+            int updateCnt = JsonWorker.updateContentDimension(jsonKey, jsonData, modelDims, newJson);
+            if(updateCnt > 0) {
+                FileUtil.appendToFile(filesToUpdate, "----------Found " + updateCnt + " content dimension fixed in 1 design, key: " + jsonKey + " ----------");
+            }
         } catch (JsonParseException e) {
             FileUtil.appendToFile(failedLog, "Failed to parse and update json file ---> " + jsonKey);
         } catch (JsonMappingException e) {
@@ -146,7 +149,32 @@ public class WrongDimensionFix {
                 FileUtil.appendToFile(failedLog, "Failed to upload file to S3, key -- > " + jsonKey);
             }
         }*/
+
     }
+
+    public void processUpdate(List<String> jsonUrls) {
+        for(String key : jsonUrls) {
+            String keyName = JsonWorker.extractKeyFromUrl(key);
+            try {
+                getAndUpdate(keyName);
+            } catch (JsonDataMD5CheckException e) {
+                e.printStackTrace();
+            } catch (JsonParseUpdateException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            FileUtil.finishAppend(filesToUpdate);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileUtil.finishAppend(failedLog);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void main(String[] args) throws IOException {
         WrongDimensionFix f = null;
@@ -161,16 +189,8 @@ public class WrongDimensionFix {
         String tenant = "ezhome";
         String dbConfig = MYSQL_CONF;
         List<String> jsonUrls = DBUtil.getInstance(dbConfig).fetchS3JsonListFromDB(tenant, s3_host);
-        for(String key : jsonUrls) {
-            String keyName = JsonWorker.extractKeyFromUrl(key);
-            try {
-                f.getAndUpdate(keyName);
-            } catch (JsonDataMD5CheckException e) {
-                e.printStackTrace();
-            } catch (JsonParseUpdateException e) {
-                e.printStackTrace();
-            }
-        }
+        f.processUpdate(jsonUrls);
+
         System.out.println("Dimension fix done");
     }
 }
