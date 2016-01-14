@@ -30,8 +30,8 @@ public class WrongDimensionFix {
     private static String JSON_FILE_URL;
     private static String MYSQL_CONF;
 
-//    private static String s3_host = "juran-prod-contents.s3.cn-north-1.amazonaws.com.cn";
-    private static String s3_host = "juran-staging-contents.s3.cn-north-1.amazonaws.com.cn";
+    private static String s3_host = "juran-prod-contents.s3.cn-north-1.amazonaws.com.cn";
+//    private static String s3_host = "juran-staging-contents.s3.cn-north-1.amazonaws.com.cn";
 
     private Map<String, Float[]> modelDims = new Hashtable();
     private List<String> modelList = new ArrayList();
