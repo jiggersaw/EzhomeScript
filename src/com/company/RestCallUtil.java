@@ -65,8 +65,8 @@ public class RestCallUtil {
             String secret = BackendHeaderUtil.genHsSecurity(tenant);
             System.out.println("ts ---> " + ts);
             System.out.println("secret ---> " + secret);
-            httpGet.setHeader("hs_ts",ts);
-            httpGet.setHeader("hs_secret",secret);
+//            httpGet.setHeader("hs_ts",ts);
+//            httpGet.setHeader("hs_secret",secret);
             response = httpclient.execute(httpGet);
         } else if("PUT".equalsIgnoreCase(httpMethod)) {
             HttpPost httpPost = new HttpPost(url);
@@ -83,7 +83,8 @@ public class RestCallUtil {
             httpPost.setEntity(en);
             response = httpclient.execute(httpPost);
         }
-        String result = streamToString(response.getEntity().getContent(), EntityUtils.getContentCharSet(response.getEntity()));
+        String charset =  EntityUtils.getContentCharSet(response.getEntity());
+        String result = streamToString(response.getEntity().getContent(), charset == null ? "UTF-8" : charset);
         return result;
     }
 
@@ -151,7 +152,8 @@ public class RestCallUtil {
     }
 
     public static void main(String[] args) throws IOException {
-        String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
+//        String jsonTemplate = "http://3d.juran.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
+        String jsonTemplate = "http://3d-alpha.juranzhijia.com.cn/api/rest/v2.0/product/{0}?t={1}&l=en_US";
 
         List<String> ids = FileUtil.readFileAsLines(new File("C:\\color_test_data\\wrong_floor.txt"));
         String[] urls = new String[ids.size()];

@@ -1,5 +1,8 @@
 package com.company;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -76,7 +79,8 @@ public class WrongDimensionFix {
         for(int i=0; i<urls.length; i++) {
             urls[i] = MessageFormat.format(GET_PROD_REST, new String[]{ids.get(i), tenant});
         }
-        String[] resps = RestCallUtil.batchRestCall(urls, null, "ezhome", "GET");
+        String[] resps = RestCallUtil.batchRestCall(urls, null, tenant, "GET");
+        System.out.println("resps length ----> " + resps.length);
         for(int j = 0; j<resps.length; j++) {
             Object[] resp = JsonWorker.getDimFromContent(resps[j]);
             Float[] dim = new Float[3];
@@ -116,10 +120,14 @@ public class WrongDimensionFix {
         boolean updated = true;
         try {
             updated = JsonWorker.updateContentDimension(jsonData, modelDims, newJson);
-        } catch (Exception e) {
+        } catch (JsonParseException e) {
             FileUtil.appendToFile(failedLog, "Failed to parse and update json file ---> " + jsonKey);
-            throw new JsonParseUpdateException("Failed to parse and update json file ---> " + jsonKey);
+        } catch (JsonMappingException e) {
+            FileUtil.appendToFile(failedLog, "Failed to map json file ---> " + jsonKey);
+        } catch (Exception e) {
+            throw e;
         }
+
 
 /*        if(updated) {
             try {

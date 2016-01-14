@@ -1,7 +1,9 @@
 package com.company;
 
 import com.amazonaws.util.Md5Utils;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
@@ -112,7 +114,7 @@ public class JsonWorker {
         return xyz;
     }
 
-    public static boolean updateContentDimension(String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) {
+    public static boolean updateContentDimension(String jsonData, Map<String, Float[]> contentDimMap, StringBuilder holder) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = mapperPool.get(poolPos.getAndIncrement() % POOL_SIZE);
         String rs;
         try {
@@ -120,6 +122,9 @@ public class JsonWorker {
             List<Map> l = (List) m.get("data");
             final AtomicBoolean updated = new AtomicBoolean(false);
             final AtomicInteger updateCnt = new AtomicInteger(0);
+            if(l == null) {
+                System.out.println("Got null...");
+            }
             l.forEach(m1 -> {
                 if("hsw.model.Content".equals(m1.get("Class")) && m1.get("seekId") != null &&
                         ((String)m1.get("seekId")).trim().length() > 0 &&
@@ -144,7 +149,13 @@ public class JsonWorker {
                 System.out.println("----------Found " + updateCnt + " content dimension fixed in 1 design----------");
                 return updated.get();
             }
-        } catch(Exception e) {
+        } catch(JsonParseException e1) {
+            throw e1;
+        } catch(JsonMappingException e2) {
+            throw e2;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
