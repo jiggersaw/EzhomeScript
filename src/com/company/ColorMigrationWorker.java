@@ -89,7 +89,7 @@ public class ColorMigrationWorker {
     }
 
 
-    private void loadConfig(String configPath) throws IOException {
+    public void loadConfig(String configPath) throws IOException {
         Properties p = new Properties();
         p.load(new FileReader(new File(configPath)));
 //        p.load(ColorMigrationWorker.class.getClassLoader().getResourceAsStream(configPath));

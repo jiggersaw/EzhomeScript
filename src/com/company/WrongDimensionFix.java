@@ -28,8 +28,10 @@ public class WrongDimensionFix {
     private static String FAILED_JSON_FILES;
     private static String FILES_TO_BE_UPDATE;
     private static String JSON_FILE_URL;
+    private static String MYSQL_CONF;
 
-    private static String s3_host = "juran-prod-contents.s3.cn-north-1.amazonaws.com.cn";
+//    private static String s3_host = "juran-prod-contents.s3.cn-north-1.amazonaws.com.cn";
+    private static String s3_host = "juran-staging-contents.s3.cn-north-1.amazonaws.com.cn";
 
     private Map<String, Float[]> modelDims = new Hashtable();
     private List<String> modelList = new ArrayList();
@@ -55,6 +57,8 @@ public class WrongDimensionFix {
         if((GET_PROD_REST = p.getProperty("REST_GET_PROD_URL")) == null) throw new InvalidPropertiesFormatException("Missing GET_PROD_REST");
         if((MODEL_LIST_FILE = p.getProperty("MODEL_LIST_FILE")) == null) throw new InvalidPropertiesFormatException("Missing MODEL_LIST_FILE");
         if((FROM_BUCKET_NAME = p.getProperty("FROM_BUCKET_NAME")) == null) throw new InvalidPropertiesFormatException("Missing FROM_BUCKET_NAME");
+        if((MYSQL_CONF = p.getProperty("MYSQL_CONF")) == null) throw new InvalidPropertiesFormatException("Missing MYSQL_CONF");
+
         if((FAILED_JSON_FILES = p.getProperty("FAILED_JSON_FILES")) == null) {
             throw new InvalidPropertiesFormatException("Missing key FAILED_JSON_FILES");
         } else {
@@ -75,7 +79,7 @@ public class WrongDimensionFix {
 
     public void initModelDimensionMap() throws IOException {
         String tenant = "ezhome";
-        List<String> ids = FileUtil.readFileAsLines(new File("C:\\color_test_data\\wrong_floor.txt"));
+        List<String> ids = FileUtil.readFileAsLines(new File(MODEL_LIST_FILE));
         String[] urls = new String[ids.size()];
         for(int i=0; i<urls.length; i++) {
             urls[i] = MessageFormat.format(GET_PROD_REST, new String[]{ids.get(i), tenant});
@@ -87,7 +91,7 @@ public class WrongDimensionFix {
             Float[] dim = new Float[3];
             for(int k=1; k<resp.length; k++) {
                 BigDecimal bd = new BigDecimal((Float) resp[k] / 100);
-                bd = bd.setScale(3, BigDecimal.ROUND_HALF_UP);
+                bd = bd.setScale(4, BigDecimal.ROUND_HALF_UP);
                 dim[k-1] = bd.floatValue();
             }
             modelDims.put((String)resp[0], dim);
@@ -105,10 +109,13 @@ public class WrongDimensionFix {
         try {
             md5OnS3 = S3Utils.getObjectMD5(FROM_BUCKET_NAME, s3Key);
         } catch (Exception e) {
+            System.err.println("Failed to get MD5 for -- > " + jsonKey);
             FileUtil.appendToFile(failedLog, "Failed to get MD5 for -- > " + jsonKey);
-            throw e;
+            return;
+//            throw e;
         }
         String jsonData = JsonWorker.tryReadCorrectJson(FROM_BUCKET_NAME, jsonKey, md5OnS3, failedLog);
+        if("test".equals(jsonData.trim())) return;
         if (md5OnS3 == null) {
             System.out.println("Failed to get MD5 for -- > " + jsonKey);
             FileUtil.appendToFile(failedLog, "Failed to get MD5 for -- > " + jsonKey);
@@ -152,8 +159,8 @@ public class WrongDimensionFix {
 //        List<String> jsonKeys = f.getAllJsonsKeys();
         ColorMigrationWorker w = new ColorMigrationWorker();
         String tenant = "ezhome";
-
-        List<String> jsonUrls = w.fetchS3JsonListFromDB(tenant, s3_host);
+        String dbConfig = MYSQL_CONF;
+        List<String> jsonUrls = DBUtil.getInstance(dbConfig).fetchS3JsonListFromDB(tenant, s3_host);
         for(String key : jsonUrls) {
             String keyName = JsonWorker.extractKeyFromUrl(key);
             try {
