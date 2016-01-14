@@ -29,6 +29,7 @@ public class WrongDimensionFix {
     private static String FILES_TO_BE_UPDATE;
     private static String JSON_FILE_URL;
 
+    private static String s3_host = "juran-prod-contents.s3.cn-north-1.amazonaws.com.cn";
 
     private Map<String, Float[]> modelDims = new Hashtable();
     private List<String> modelList = new ArrayList();
@@ -148,10 +149,15 @@ public class WrongDimensionFix {
             throw new IllegalArgumentException("Must specify the color migration configration file path!");
         }
         f.initModelDimensionMap();
-        List<String> jsonKeys = f.getAllJsonsKeys();
-        for(String key : jsonKeys) {
+//        List<String> jsonKeys = f.getAllJsonsKeys();
+        ColorMigrationWorker w = new ColorMigrationWorker();
+        String tenant = "ezhome";
+
+        List<String> jsonUrls = w.fetchS3JsonListFromDB(tenant, s3_host);
+        for(String key : jsonUrls) {
+            String keyName = JsonWorker.extractKeyFromUrl(key);
             try {
-                f.getAndUpdate(key);
+                f.getAndUpdate(keyName);
             } catch (JsonDataMD5CheckException e) {
                 e.printStackTrace();
             } catch (JsonParseUpdateException e) {

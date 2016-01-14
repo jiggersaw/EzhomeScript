@@ -40,7 +40,7 @@ public class ColorMigrationWorker {
     private static String AWS_ACCESS_KEY = "AKIAPVHMQY6BUZ56H2MQ";
     private static String AWS_SECRET_KEY = "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";
 
-    private static String COLOR_MAP_FILE = "C:\\color_test_data\\color_map_ezhome2.txt";
+    private static String COLOR_MAP_FILE = "C:\\color_test_data\\color_map_ezhome.txt";
 
     private static String FAILED_JSON_FILES = "C:\\color_test_data\\failed_json_upload.txt";
 
@@ -347,7 +347,7 @@ public class ColorMigrationWorker {
 //        NEED_BACKUP_BUCKET = false;
 //        String colorCategoryId = "d72316f9-ed94-4872-9663-206471783a18";
 
-        ColorMigrationWorker w = new ColorMigrationWorker();
+/*        ColorMigrationWorker w = new ColorMigrationWorker();
         int updateCnt = 0;
         if(args.length == 1) {
             w.loadConfig(args[0]);
@@ -465,23 +465,25 @@ public class ColorMigrationWorker {
         System.out.println("Found " + updateCnt + " json files need to be updated.");
         FileUtil.finishAppend(failedLog);
         FileUtil.finishAppend(filesToUpdate);
-        System.out.println("Migration done on bucket " + DEST_UPDATE_BUCKET);
+        System.out.println("Migration done on bucket " + DEST_UPDATE_BUCKET);*/
 
 
 
-        /*ColorMigrationWorker w = new ColorMigrationWorker();
+        ColorMigrationWorker w = new ColorMigrationWorker();
         if(args.length == 1) {
             w.loadConfig(args[0]);
         } else {
             throw new IllegalArgumentException("Must specify the color migration configration file path!");
         }
 //        String jsonData = w.retrieveJson("https://george-test-bucket.s3.cn-north-1.amazonaws.com.cn/Asset/9ef2fc06-7b37-4caa-8112-4dfe5ad0c125/6fa033db-9409-4fe1-97bc-298db16020fc.json");
-        String jsonUrl = "https://george-test-bucket.s3.cn-north-1.amazonaws.com.cn/Asset/07c26cdf-523f-4e24-b30f-ffcdf8d9c021/09a676a0-d4c2-4cbf-bde2-840c3ce93a4c.json";
+        String jsonUrl = "https://juran-prod-contents-george.s3.cn-north-1.amazonaws.com.cn/Asset/00053176-cd12-4c6d-aac7-753c9ef9cc25/cf4864c9-938a-4f91-919a-481611b8b955.json";
 
-        String jsonData = w.retrieveJson(jsonUrl);
-        byte[] jsonByte = jsonData.getBytes("UTF-8");
+//        String jsonData = w.retrieveJson(jsonUrl);
         String s3Key = JsonWorker.extractKeyFromUrl(jsonUrl);
-        String md5OnS3 = S3Utils.getObjectMD5("george-test-bucket", s3Key);
+        String md5OnS3 = S3Utils.getObjectMD5("juran-prod-contents-george", s3Key);
+        String jsonData = w.tryReadCorrectJson("juran-prod-contents-george", s3Key, md5OnS3,null);
+        byte[] jsonByte = jsonData.getBytes("UTF-8");
+
 //        String jsonData = w.tryReadCorrectJson("george-test-bucket", s3Key, md5OnS3, null);
 //        String md5AfterRead = Md5Utils.md5AsBase64(jsonByte);
         String md5AfterRead = MDHexUtil.getMD5Hex(jsonByte);
@@ -500,7 +502,7 @@ public class ColorMigrationWorker {
             ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte);
             String md5 = Md5Utils.md5AsBase64(jsonByte);
             try {
-                S3Utils.uploadFile("george-test-bucket", "encoding_ok.json", md5, bi, jsonByte.length);
+                S3Utils.uploadFile("george-test-bucket", "cf4864c9-938a-4f91-919a-481611b8b955.json", md5, bi, jsonByte.length);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -509,23 +511,23 @@ public class ColorMigrationWorker {
             e.printStackTrace();
         }
 
-        ObjectMapper om = new ObjectMapper();
-        Map m = om.readValue(jsonData, Map.class);
-        jsonData = om.writeValueAsString(m);
-        byte[] jsonByte1 = new byte[0];
-        try {
-            jsonByte1 = jsonData.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String md5BeforeUpload = Md5Utils.md5AsBase64(jsonByte1);
-        ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte1);
-        try {
-            S3Utils.uploadFile("george-test-bucket", "encoding_issue2.json", md5BeforeUpload, bi, jsonByte1.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("DONE");*/
+//        ObjectMapper om = new ObjectMapper();
+//        Map m = om.readValue(jsonData, Map.class);
+//        jsonData = om.writeValueAsString(m);
+//        byte[] jsonByte1 = new byte[0];
+//        try {
+//            jsonByte1 = jsonData.toString().getBytes("UTF-8");
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+//        String md5BeforeUpload = Md5Utils.md5AsBase64(jsonByte1);
+//        ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte1);
+//        try {
+//            S3Utils.uploadFile("george-test-bucket", "encoding_issue2.json", md5BeforeUpload, bi, jsonByte1.length);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        System.out.println("DONE");
     }
 }
 
