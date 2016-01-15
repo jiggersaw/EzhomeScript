@@ -134,12 +134,23 @@ public class JsonWorker {
                     Float x = contentDimMap.get(m1.get("seekId"))[0];
                     Float y = contentDimMap.get(m1.get("seekId"))[1];
                     Float z = contentDimMap.get(m1.get("seekId"))[2];
-                    System.out.println("XLength before fix: " + m1.get("XLength") + " | XLength after fix: " + x + " for seekid: " + seekid);
-                    System.out.println("YLength before fix: " + m1.get("YLength") + " | YLength after fix: " + y + " for seekid: " + seekid);
-                    System.out.println("ZLength before fix: " + m1.get("ZLength") + " | ZLength after fix: " + z + " for seekid: " + seekid);
-                    m1.put("XLength", String.valueOf(x));
-                    m1.put("YLength", String.valueOf(y));
-                    m1.put("ZLength", String.valueOf(z));
+                    if(m1.get("XLength") == null && m1.get("YLength") == null && m1.get("ZLength") == null) {
+                        System.out.println("Found dimension null, try get meta...");
+                        Map meta = (Map) m1.get("meta");
+                        System.out.println("XLength before fix: " + meta.get("XLength") + " | XLength after fix: " + x*100 + " for seekid: " + seekid);
+                        System.out.println("YLength before fix: " + meta.get("YLength") + " | YLength after fix: " + y*100 + " for seekid: " + seekid);
+                        System.out.println("ZLength before fix: " + meta.get("ZLength") + " | ZLength after fix: " + z*100 + " for seekid: " + seekid);
+                        meta.put("XLength", String.valueOf(x*100));
+                        meta.put("YLength", String.valueOf(y*100));
+                        meta.put("ZLength", String.valueOf(z*100));
+                    } else {
+                        System.out.println("XLength before fix: " + m1.get("XLength") + " | XLength after fix: " + x + " for seekid: " + seekid);
+                        System.out.println("YLength before fix: " + m1.get("YLength") + " | YLength after fix: " + y + " for seekid: " + seekid);
+                        System.out.println("ZLength before fix: " + m1.get("ZLength") + " | ZLength after fix: " + z + " for seekid: " + seekid);
+                        m1.put("XLength", String.valueOf(x));
+                        m1.put("YLength", String.valueOf(y));
+                        m1.put("ZLength", String.valueOf(z));
+                    }
                     updated.set(true);
                     updateCnt.incrementAndGet();
                 }

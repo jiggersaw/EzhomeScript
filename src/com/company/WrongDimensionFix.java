@@ -125,9 +125,10 @@ public class WrongDimensionFix {
             throw new JsonDataMD5CheckException("MD5 not match after retrieving from ---->" + jsonKey);
         }
         StringBuilder newJson = new StringBuilder();
-        System.out.println("Starting try and update dimension for key: " + jsonKey);
+//        System.out.println("Starting try and update dimension for key: " + jsonKey);
+        int updateCnt = 0;
         try {
-            int updateCnt = JsonWorker.updateContentDimension(jsonKey, jsonData, modelDims, newJson);
+            updateCnt = JsonWorker.updateContentDimension(jsonKey, jsonData, modelDims, newJson);
             if(updateCnt > 0) {
                 FileUtil.appendToFile(filesToUpdate, "----------Found " + updateCnt + " content dimension fixed in 1 design, key: " + jsonKey + " ----------");
             }
@@ -139,8 +140,7 @@ public class WrongDimensionFix {
             throw e;
         }
 
-
-/*        if(updated) {
+        if(updateCnt > 0) {
             try {
                 S3Utils.uploadFileAsUTF8(FROM_BUCKET_NAME, jsonKey, newJson.toString());
                 FileUtil.appendToFile(filesToUpdate, "Successfully upated json url ---> " + jsonKey);
@@ -148,12 +148,12 @@ public class WrongDimensionFix {
                 e.printStackTrace();
                 FileUtil.appendToFile(failedLog, "Failed to upload file to S3, key -- > " + jsonKey);
             }
-        }*/
+        }
 
     }
 
     public void processUpdate(List<String> jsonUrls) {
-        for(String key : jsonUrls) {
+        jsonUrls.stream().parallel().forEach(key -> {
             String keyName = JsonWorker.extractKeyFromUrl(key);
             try {
                 getAndUpdate(keyName);
@@ -162,7 +162,17 @@ public class WrongDimensionFix {
             } catch (JsonParseUpdateException e) {
                 e.printStackTrace();
             }
-        }
+        });
+        /*for(String key : jsonUrls) {
+            String keyName = JsonWorker.extractKeyFromUrl(key);
+            try {
+                getAndUpdate(keyName);
+            } catch (JsonDataMD5CheckException e) {
+                e.printStackTrace();
+            } catch (JsonParseUpdateException e) {
+                e.printStackTrace();
+            }
+        }*/
         try {
             FileUtil.finishAppend(filesToUpdate);
         } catch (IOException e) {
