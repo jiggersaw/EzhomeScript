@@ -52,6 +52,8 @@ public class ColorMigrationWorker {
 
     private static String DEST_UPDATE_BUCKET;
 
+    private static String DEST_UPDATE_BUCKET_MIRROR;
+
     private static String BACKUP_BUCKET = "george-backup-bucket";
 
     private static String colorCategoryId;
@@ -94,6 +96,7 @@ public class ColorMigrationWorker {
         p.load(new FileReader(new File(configPath)));
 //        p.load(ColorMigrationWorker.class.getClassLoader().getResourceAsStream(configPath));
         if((DEST_UPDATE_BUCKET = p.getProperty("DEST_UPDATE_BUCKET")) == null) throw new InvalidPropertiesFormatException("Missing key DEST_UPDATE_BUCKET");
+        if((DEST_UPDATE_BUCKET_MIRROR = p.getProperty("DEST_UPDATE_BUCKET_MIRROR")) == null) throw new InvalidPropertiesFormatException("Missing key DEST_UPDATE_BUCKET_MIRROR");
         if((COLOR_MAP_FILE = p.getProperty("COLOR_MAP_FILE")) == null) throw new InvalidPropertiesFormatException("Missing key COLOR_MAP_FILE");
         if((AWS_ACCESS_KEY = p.getProperty("AWS_ACCESS_KEY")) == null) throw new InvalidPropertiesFormatException("Missing key AWS_ACCESS_KEY");
         if((AWS_SECRET_KEY = p.getProperty("AWS_SECRET_KEY")) == null) throw new InvalidPropertiesFormatException("Missing key AWS_SECRET_KEY");
@@ -347,7 +350,7 @@ public class ColorMigrationWorker {
 //        NEED_BACKUP_BUCKET = false;
 //        String colorCategoryId = "d72316f9-ed94-4872-9663-206471783a18";
 
-/*        ColorMigrationWorker w = new ColorMigrationWorker();
+        ColorMigrationWorker w = new ColorMigrationWorker();
         int updateCnt = 0;
         if(args.length == 1) {
             w.loadConfig(args[0]);
@@ -449,7 +452,7 @@ public class ColorMigrationWorker {
                 ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte);
                 // Update file on s3
                 try {
-                    S3Utils.uploadFile(DEST_UPDATE_BUCKET, keyName, md5BeforeUpload, bi, jsonByte.length);
+                    S3Utils.uploadFile(DEST_UPDATE_BUCKET, DEST_UPDATE_BUCKET_MIRROR, keyName, md5BeforeUpload, bi, jsonByte.length);
                     FileUtil.appendToFile(filesToUpdate, "Successfully upated json url ---> " + jsonUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -465,23 +468,23 @@ public class ColorMigrationWorker {
         System.out.println("Found " + updateCnt + " json files need to be updated.");
         FileUtil.finishAppend(failedLog);
         FileUtil.finishAppend(filesToUpdate);
-        System.out.println("Migration done on bucket " + DEST_UPDATE_BUCKET);*/
+        System.out.println("Migration done on bucket " + DEST_UPDATE_BUCKET);
 
 
 
-        ColorMigrationWorker w = new ColorMigrationWorker();
+       /* ColorMigrationWorker w = new ColorMigrationWorker();
         if(args.length == 1) {
             w.loadConfig(args[0]);
         } else {
             throw new IllegalArgumentException("Must specify the color migration configration file path!");
         }
 //        String jsonData = w.retrieveJson("https://george-test-bucket.s3.cn-north-1.amazonaws.com.cn/Asset/9ef2fc06-7b37-4caa-8112-4dfe5ad0c125/6fa033db-9409-4fe1-97bc-298db16020fc.json");
-        String jsonUrl = "https://juran-prod-contents-george.s3.cn-north-1.amazonaws.com.cn/Asset/00053176-cd12-4c6d-aac7-753c9ef9cc25/cf4864c9-938a-4f91-919a-481611b8b955.json";
+        String jsonUrl = "https://juran-prod-contents.s3.cn-north-1.amazonaws.com.cn/Asset/e39ba5c5-a6e7-4917-b4c3-fb69a07f6368/6cb37b59-50df-46d2-bd4f-07537152256d.json";
 
 //        String jsonData = w.retrieveJson(jsonUrl);
         String s3Key = JsonWorker.extractKeyFromUrl(jsonUrl);
-        String md5OnS3 = S3Utils.getObjectMD5("juran-prod-contents-george", s3Key);
-        String jsonData = w.tryReadCorrectJson("juran-prod-contents-george", s3Key, md5OnS3,null);
+        String md5OnS3 = S3Utils.getObjectMD5("juran-prod-contents", s3Key);
+        String jsonData = w.tryReadCorrectJson("juran-prod-contents", s3Key, md5OnS3, null);
         byte[] jsonByte = jsonData.getBytes("UTF-8");
 
 //        String jsonData = w.tryReadCorrectJson("george-test-bucket", s3Key, md5OnS3, null);
@@ -502,14 +505,14 @@ public class ColorMigrationWorker {
             ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte);
             String md5 = Md5Utils.md5AsBase64(jsonByte);
             try {
-                S3Utils.uploadFile("george-test-bucket", "cf4864c9-938a-4f91-919a-481611b8b955.json", md5, bi, jsonByte.length);
+                S3Utils.uploadFile("george-test-bucket", "6cb37b59-50df-46d2-bd4f-07537152256d.json", md5, bi, jsonByte.length);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 //            FileUtil.writeToFile(new File("C:\\color_test_data\\dummy.json"), ss.toString());
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
 //        ObjectMapper om = new ObjectMapper();
 //        Map m = om.readValue(jsonData, Map.class);

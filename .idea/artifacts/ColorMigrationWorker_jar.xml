@@ -1,0 +1,36 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ColorMigrationWorker:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ColorMigrationWorker_jar</output-path>
+    <root id="archive" name="ColorMigrationWorker.jar">
+      <element id="module-output" name="ApacheRestClient" />
+      <element id="extracted-dir" path="H:/my_lib/httpmime-4.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/jna-4.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/freemarker-2.3.18/freemarker-2.3.18.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/commons-codec-1.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/fluent-hc-4.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpclient-cache-4.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/commons-codec-1.6/commons-codec-1.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/jackson-annotations-2.5.3/jackson-annotations-2.5.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpclient-win-4.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/commons-logging-1.1.3/commons-logging-1.1.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/javax-mail-1.4.6/javax.mail-api-1.4.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="F:/mysql-connector-java-5.1.38-bin.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/jna-platform-4.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="F:/aws-java-sdk-1.10.42/aws-java-sdk-1.10.42/lib/aws-java-sdk-1.10.42.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="F:/aws-java-sdk-1.10.42/aws-java-sdk-1.10.42/lib/aws-java-sdk-flow-build-tools-1.10.42.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/commons-logging-1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/spring-3.0/spring-core-3.0.7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/spring-3.0/spring-beans-3.0.7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/spring-3.0/spring-context-3.0.7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpclient-4.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/joda-time-2.8.1/joda-time-2.8.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpcomponents-client-4.3/httpcore-4.3.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpcomponents-client-4.3/httpclient-4.3.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/httpcore-4.4.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/jackson-core-2.5.3/jackson-core-2.5.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/aspectj-1.6/aspectjrt.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/aspectj-1.6/aspectjweaver.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="H:/my_lib/jackson-databind-2.5.3/jackson-databind-2.5.3.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

@@ -25,6 +25,7 @@ public class WrongDimensionFix {
     private String GET_PROD_REST;
     private String MODEL_LIST_FILE;
     private String FROM_BUCKET_NAME;
+    private String DEST_UPDATE_BUCKET_MIRROR;
     private static String FAILED_JSON_FILES;
     private static String FILES_TO_BE_UPDATE;
     private static String JSON_FILE_URL;
@@ -57,6 +58,7 @@ public class WrongDimensionFix {
         if((GET_PROD_REST = p.getProperty("REST_GET_PROD_URL")) == null) throw new InvalidPropertiesFormatException("Missing GET_PROD_REST");
         if((MODEL_LIST_FILE = p.getProperty("MODEL_LIST_FILE")) == null) throw new InvalidPropertiesFormatException("Missing MODEL_LIST_FILE");
         if((FROM_BUCKET_NAME = p.getProperty("FROM_BUCKET_NAME")) == null) throw new InvalidPropertiesFormatException("Missing FROM_BUCKET_NAME");
+        if((DEST_UPDATE_BUCKET_MIRROR = p.getProperty("DEST_UPDATE_BUCKET_MIRROR")) == null) throw new InvalidPropertiesFormatException("Missing key DEST_UPDATE_BUCKET_MIRROR");
         if((MYSQL_CONF = p.getProperty("MYSQL_CONF")) == null) throw new InvalidPropertiesFormatException("Missing MYSQL_CONF");
 
         if((FAILED_JSON_FILES = p.getProperty("FAILED_JSON_FILES")) == null) {
@@ -142,7 +144,7 @@ public class WrongDimensionFix {
 
         if(updateCnt > 0) {
             try {
-                S3Utils.uploadFileAsUTF8(FROM_BUCKET_NAME, jsonKey, newJson.toString());
+                S3Utils.uploadFileAsUTF8(FROM_BUCKET_NAME, DEST_UPDATE_BUCKET_MIRROR, jsonKey, newJson.toString());
                 FileUtil.appendToFile(filesToUpdate, "Successfully upated json url ---> " + jsonKey);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -50,7 +50,7 @@ public class S3Utils {
 //        return meta.getContentMD5();
     }
 
-    public static void uploadFileAsUTF8(String bucketName, String key, String content) throws Exception {
+    public static void uploadFileAsUTF8(String bucketName, String mirrorBucketName, String key, String content) throws Exception {
         byte[] jsonByte = new byte[0];
         try {
             jsonByte = content.toString().getBytes("UTF-8");
@@ -60,10 +60,10 @@ public class S3Utils {
         }
         String md5BeforeUpload = Md5Utils.md5AsBase64(jsonByte);
         ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte);
-        uploadFile(bucketName, key, md5BeforeUpload, bi, jsonByte.length);
+        uploadFile(bucketName, mirrorBucketName, key, md5BeforeUpload, bi, jsonByte.length);
     }
 
-    public static void uploadFile(String bucketName, String key, String inMD5, InputStream in, long streamLen) throws Exception {
+    public static void uploadFile(String bucketName, String mirrorBucket, String key, String inMD5, InputStream in, long streamLen) throws Exception {
         try {
             if (!s3.doesBucketExist(bucketName)) {
                 s3.createBucket(bucketName);
@@ -84,6 +84,18 @@ public class S3Utils {
             PutObjectResult r = s3.putObject(pr);
             String md5 = r.getContentMd5();
             System.out.println(md5);
+
+            if(mirrorBucket != null) {
+//                GetObjectRequest gr = new GetObjectRequest(bucketName, key);
+//                S3Object uploaded = s3.getObject(gr);
+                if (!s3.doesBucketExist(mirrorBucket)) {
+                    s3.createBucket(mirrorBucket);
+                }
+                CopyObjectRequest cr = new CopyObjectRequest(bucketName, key, mirrorBucket, key);
+                cr.withCannedAccessControlList(CannedAccessControlList.PublicRead);
+                s3.copyObject(cr);
+                System.out.println("Copied: " + key + " from " + bucketName + " to " + mirrorBucket);
+            }
             /*ObjectListing files = s3.listObjects(new ListObjectsRequest().withBucketName(bucketName));
             List<S3ObjectSummary> objs = getJsonFilesFromBucket(bucketName);
             for(S3ObjectSummary o : objs) {
@@ -136,8 +148,8 @@ public class S3Utils {
         return buf.toString();
     }
 
-    public static void uploadFile(String bucketName, String key, String md5, File file) throws Exception {
-        uploadFile(bucketName, key, md5, new FileInputStream(file), file.length());
+    public static void uploadFile(String bucketName, String mirrorBucketName, String key, String md5, File file) throws Exception {
+        uploadFile(bucketName, mirrorBucketName, key, md5, new FileInputStream(file), file.length());
     }
 
     public static void delFile(String bucketName, String key) {
@@ -205,19 +217,27 @@ public class S3Utils {
         return allObjs;
     }
 
-    public static void copyFiles(String srcBucket, String desBucket, String bucketName) {
+    public static void copyJsonFiles(String srcBucket, String desBucket, String bucketName) {
         List<S3ObjectSummary> srcObjs = getJsonFilesFromBucket(srcBucket);
         if (!s3.doesBucketExist(desBucket)) {
             s3.createBucket(desBucket);
         }
-        for (S3ObjectSummary o : srcObjs) {
+        srcObjs.stream().parallel().forEach(o -> {
             System.out.println(o.getKey());
             if (o.getBucketName().contains(bucketName)) {
                 CopyObjectRequest cr = new CopyObjectRequest(srcBucket, o.getKey(), desBucket, o.getKey());
                 cr.withCannedAccessControlList(CannedAccessControlList.PublicRead);
                 s3.copyObject(cr);
             }
-        }
+        });
+/*        for (S3ObjectSummary o : srcObjs) {
+            System.out.println(o.getKey());
+            if (o.getBucketName().contains(bucketName)) {
+                CopyObjectRequest cr = new CopyObjectRequest(srcBucket, o.getKey(), desBucket, o.getKey());
+                cr.withCannedAccessControlList(CannedAccessControlList.PublicRead);
+                s3.copyObject(cr);
+            }
+        }*/
     }
 
     public static String backupFile(String srcBucket, String srcKeyName, String destBucket) throws Exception {
@@ -270,8 +290,8 @@ public class S3Utils {
     public static void main(String[] args) throws Exception {
 //        delBucket("juran-prod-contents-george", false);
 //        uploadFile(my_bucket_name, "george_test_file_key", new File("c:\\s3_resp.txt"));
-//        copyFiles("juran-staging-contents", "juran-staging-contents", "juran-staging-contents");
-        copyFiles("juran-prod-contents", "juran-prod-contents-george2", "juran-prod-contents");
+//        copyJsonFiles("juran-staging-contents", "juran-staging-contents", "juran-staging-contents");
+        copyJsonFiles("juran-prod-contents-george", "juran-prod-contents-color-test", "juran-prod-contents-george");
 //        String jsonUrlFile = "C:\\color_test_data\\files_to_update2.txt";
 //        updatePermission("juran-staging-contents", jsonUrlFile);
     }
