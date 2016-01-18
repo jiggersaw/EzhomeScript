@@ -16,6 +16,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +62,37 @@ public class S3Utils {
         String md5BeforeUpload = Md5Utils.md5AsBase64(jsonByte);
         ByteArrayInputStream bi = new ByteArrayInputStream(jsonByte);
         uploadFile(bucketName, mirrorBucketName, key, md5BeforeUpload, bi, jsonByte.length);
+    }
+
+    public static boolean updateFileMeta(String bucketName, String key) {
+        GetObjectMetadataRequest gm = new GetObjectMetadataRequest(bucketName, key);
+        ObjectMetadata m =s3.getObjectMetadata(gm);
+        String t = m.getContentType();
+        String contentEncoding = m.getContentEncoding();
+        if("application/octet-stream".equalsIgnoreCase(t) || "UTF-8".equalsIgnoreCase(contentEncoding)) {
+            System.out.println("Found 1 wrong design with header ---> " + t + " content encoding: " + contentEncoding + ", key: " + key);
+            GetObjectRequest gr = new GetObjectRequest(bucketName, key);
+            S3Object o = s3.getObject(gr);
+            ObjectMetadata m1 = new ObjectMetadata();
+            m1.setContentType("application/json;charset=UTF-8");
+            m1.setContentLength(m.getContentLength());
+            PutObjectRequest pr = new PutObjectRequest(bucketName, key, o.getObjectContent(), m1);
+            pr.withCannedAcl(CannedAccessControlList.PublicRead);
+            s3.putObject(pr);
+            return true;
+        }
+        return false;
+    }
+
+    public static void updateFilesMeta(String bucketName) {
+        List<S3ObjectSummary> s3Objects = getJsonFilesFromBucket(bucketName);
+        AtomicInteger cnt = new AtomicInteger(0);
+        s3Objects.stream().parallel().forEach(s -> {
+            if(updateFileMeta(bucketName, s.getKey())) {
+                cnt.getAndIncrement();
+            }
+        });
+        System.out.println("Found " + cnt.intValue() + " wrong content type design. Bucket: " + bucketName);
     }
 
     public static void uploadFile(String bucketName, String mirrorBucket, String key, String inMD5, InputStream in, long streamLen) throws Exception {
@@ -217,6 +249,8 @@ public class S3Utils {
         return allObjs;
     }
 
+
+
     public static void copyJsonFiles(String srcBucket, String desBucket, String bucketName) {
         List<S3ObjectSummary> srcObjs = getJsonFilesFromBucket(srcBucket);
         if (!s3.doesBucketExist(desBucket)) {
@@ -291,9 +325,11 @@ public class S3Utils {
 //        delBucket("juran-prod-contents-george", false);
 //        uploadFile(my_bucket_name, "george_test_file_key", new File("c:\\s3_resp.txt"));
 //        copyJsonFiles("juran-staging-contents", "juran-staging-contents", "juran-staging-contents");
-        copyJsonFiles("juran-prod-contents-george", "juran-prod-contents-color-test", "juran-prod-contents-george");
+//        copyJsonFiles("juran-prod-contents-george", "juran-prod-contents-color-test", "juran-prod-contents-george");
 //        String jsonUrlFile = "C:\\color_test_data\\files_to_update2.txt";
 //        updatePermission("juran-staging-contents", jsonUrlFile);
+        String bucketName = args[0];
+        updateFilesMeta(bucketName);
     }
 
 }
